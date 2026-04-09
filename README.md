@@ -1,2 +1,11 @@
-# ESTufa
-O presente repositório contem o código base do projeto ESTufa, uma aplicação web baseada na plataforma Microsoft Azure, dedicada à identificação de espécies botânicas com recurso à inteligência artificial.
+
+  # Plant Species Detection App
+
+  This is a code bundle for Plant Species Detection App. The original project is available at https://www.figma.com/design/HWpLAGkQ7tnSVpqFwdsVSY/Plant-Species-Detection-App.
+
+  ## Running the code
+
+  Run `npm i` to install the dependencies.
+
+  Run `npm run dev` to start the development server.
+  
