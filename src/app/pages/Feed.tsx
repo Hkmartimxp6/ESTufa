@@ -14,16 +14,25 @@ export function Feed() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex items-center justify-between"
+      >
         <div>
           <h1 className="text-2xl font-serif text-stone-800">Últimas Descobertas</h1>
           <p className="text-stone-500 text-sm">Plantas identificadas pela comunidade</p>
         </div>
-        <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-stone-600 bg-white border border-stone-200 rounded-full hover:bg-stone-50 transition-colors">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-stone-600 bg-white border border-stone-200 rounded-full hover:bg-stone-50 transition-colors"
+        >
           <Filter size={14} />
           Filtrar
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       <div className="relative">
         <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3}}>

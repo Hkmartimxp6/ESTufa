@@ -25,7 +25,8 @@ export interface PlantResult {
 interface AzureContextType {
   user: User | null;
   feed: PlantResult[];
-  login: (username: string) => void;
+  login: (username: string, password: string) => boolean;
+  register: (username: string, password: string, additionalData?: Partial<User>) => boolean;
   logout: () => void;
   updateUser: (updatedData: Partial<User>) => void;
   uploadImage: (file: File) => Promise<string>;
@@ -85,17 +86,44 @@ export function AzureProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (username: string) => {
-    // In a real app, this would call an Azure Function or AD B2C
-    const newUser: User = { 
-      id: Date.now().toString(), 
+  const register = (username: string, password: string, additionalData?: Partial<User>): boolean => {
+    // Check if user already exists
+    const users = JSON.parse(localStorage.getItem('estufa_users') || '{}');
+    if (users[username]) {
+      return false; // User already exists
+    }
+
+    // Create new user
+    const newUser: User = {
+      id: Date.now().toString(),
       username,
-      fullName: username, // Default full name to username
-      email: `${username.toLowerCase().replace(/\s+/g, '.')}@exemplo.com`,
-      bio: 'Entusiasta de plantas em aprendizagem.'
+      fullName: additionalData?.fullName || username,
+      email: additionalData?.email || `${username.toLowerCase().replace(/\s+/g, '.')}@exemplo.com`,
+      bio: additionalData?.bio || 'Entusiasta de plantas em aprendizagem.',
     };
+
+    // Store user credentials (in a real app, this would be hashed and stored securely)
+    users[username] = { password, user: newUser };
+    localStorage.setItem('estufa_users', JSON.stringify(users));
+
+    // Log the user in
     setUser(newUser);
     localStorage.setItem('estufa_user', JSON.stringify(newUser));
+    return true;
+  };
+
+  const login = (username: string, password: string): boolean => {
+    // In a real app, this would call an Azure Function or AD B2C
+    const users = JSON.parse(localStorage.getItem('estufa_users') || '{}');
+
+    if (!users[username] || users[username].password !== password) {
+      return false; // Invalid credentials
+    }
+
+    const user = users[username].user;
+    setUser(user);
+    localStorage.setItem('estufa_user', JSON.stringify(user));
+    return true;
   };
 
   const logout = () => {
@@ -170,7 +198,7 @@ export function AzureProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AzureContext.Provider value={{ user, feed, login, logout, updateUser, uploadImage, detectPlant, isLoading }}>
+    <AzureContext.Provider value={{ user, feed, login, register, logout, updateUser, uploadImage, detectPlant, isLoading }}>
       {children}
     </AzureContext.Provider>
   );

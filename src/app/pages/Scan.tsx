@@ -69,12 +69,22 @@ export function Scan() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
-      <div className="text-center space-y-2">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center space-y-2"
+      >
         <h1 className="text-3xl font-serif text-green-900">Identificar Planta</h1>
         <p className="text-stone-500">Tire uma foto ou carregue uma imagem para descobrir a espécie.</p>
-      </div>
+      </motion.div>
 
-      <div className="bg-white p-6 rounded-3xl shadow-lg border border-stone-100">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="bg-white p-6 rounded-3xl shadow-lg border border-stone-100"
+      >
         <AnimatePresence mode="wait">
           {!selectedImage ? (
             <motion.div
@@ -149,13 +159,17 @@ export function Scan() {
         {/* Action Area */}
         <div className="mt-6 flex justify-center">
           {selectedImage && !result && !isLoading && (
-            <button
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleAnalyze}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-green-200/50 transition-all transform hover:-translate-y-0.5"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-green-200/50 transition-all"
             >
               <Leaf size={20} />
               Identificar Espécie
-            </button>
+            </motion.button>
           )}
         </div>
 
@@ -216,7 +230,7 @@ export function Scan() {
             {error}
           </motion.div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

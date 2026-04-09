@@ -6,18 +6,19 @@ import { useAzure } from '../context/AzureContext';
 
 export function Landing() {
   const { user } = useAzure();
-  const heroRef = useRef(null);
+  const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
-    offset: ["start start", "end start"]
+    offset: ["start start", "end start"],
+    layoutEffect: false
   });
-  
+
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
   return (
     <div className="relative bg-stone-50">
       {/* Hero Section */}
-      <section ref={heroRef} className="relative h-[90vh] flex items-start justify-center overflow-hidden pt-24">
+      <section ref={heroRef} className="relative h-[90vh] flex items-start justify-center overflow-hidden pt-24" style={{ position: 'relative' }}>
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-stone-900/60 via-stone-900/40 to-stone-50 z-10" />
           <motion.img 
@@ -145,7 +146,7 @@ export function Landing() {
           </p>
           <div className="pt-4">
             <NavLink
-              to="/login"
+              to="/register"
               className="inline-block px-10 py-4 bg-white text-green-900 rounded-full font-bold text-lg hover:bg-stone-100 transition-colors shadow-2xl hover:shadow-white/20 transform hover:-translate-y-1"
             >
               Criar Conta Gratuitamente
