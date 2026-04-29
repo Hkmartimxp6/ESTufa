@@ -9,8 +9,7 @@ export function Landing() {
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
-    offset: ["start start", "end start"],
-    layoutEffect: false
+    offset: ["start start", "end start"]
   });
 
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
