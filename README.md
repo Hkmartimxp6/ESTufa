@@ -2,7 +2,8 @@
 
 **ESTufa** é uma aplicação web baseada na plataforma Microsoft Azure, dedicada à identificação de espécies botânicas com recurso à inteligência artificial. Desenvolvida para ser uma ferramenta indispensável no cuidado e conhecimento da biodiversidade botânica.
 
-<img width="922" height="593" alt="image" src="https://github.com/user-attachments/assets/973afdf8-c1b8-44ff-8d33-7c85c89a42b3" />
+<img width="1899" height="910" alt="{7115CE0B-E69F-403C-84B9-363C0048B3EE}" src="https://github.com/user-attachments/assets/89333895-22a2-4258-90b2-a53d95dd3d66" />
+
 
 ## 📖 Sobre o Projeto
 A ferramenta permite aos utilizadores submeter fotografias de plantas para obter, de forma imediata, a sua identificação científica e respetivas informações de cultivo. Além da componente analítica, a plataforma incentiva a vertente social e a partilha de conhecimento através de um feed comunitário de descobertas e da criação de coleções digitais que funcionam como herbários pessoais privados.
@@ -15,11 +16,14 @@ Este projeto foi desenvolvido no âmbito da unidade curricular Computação em N
 * **Feed Comunitário:** Uma página pública e filtrável onde são apresentadas as plantas recentemente identificadas pela comunidade da plataforma.
 * **Coleções Digitais Pessoais:** Secção "Minhas Coleções" que serve como um herbário pessoal, guardando o histórico de todas as identificações bem-sucedidas.
 
-<img width="910" height="587" alt="image" src="https://github.com/user-attachments/assets/2348e0b7-ea8c-4d70-89b3-d34d3efdb62b" />
+<img width="1920" height="912" alt="{5FC045AD-4277-4AC9-8BEE-81CCC720CE1B}" src="https://github.com/user-attachments/assets/8ba6d9ab-c1dc-47c6-882e-cdd4d33192b6" />
 
-<img width="831" height="532" alt="image" src="https://github.com/user-attachments/assets/847445a8-092a-4767-a44e-880c33a18739" />
+<img width="1900" height="907" alt="{4137BABB-4E11-45B2-AF07-CEF7539FA6C3}" src="https://github.com/user-attachments/assets/7171ff9e-5b83-4562-b23e-aff347ecdef0" />
 
-<img width="831" height="532" alt="image" src="https://github.com/user-attachments/assets/357fa666-9618-433b-9057-1f69bf3c940b" />
+<img width="1920" height="911" alt="{173C8F16-E296-444D-9B2D-1E46EB1397A8}" src="https://github.com/user-attachments/assets/32a7fdcd-24a4-45b3-92ae-40a13ac33b43" />
+
+<img width="1920" height="903" alt="{1978642F-0302-4DAD-84C6-2C7BC3DAA47C}" src="https://github.com/user-attachments/assets/9c0581dc-03d6-4842-b73b-07c1574663fd" />
+
 
 ## 🛠️ Tecnologias e Infraestrutura
 A infraestrutura tecnológica assenta numa arquitetura moderna e escalável na nuvem Microsoft Azure.
