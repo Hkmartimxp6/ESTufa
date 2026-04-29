@@ -21,19 +21,18 @@ az cosmosdb sql container create --account-name $ACCOUNT_NAME --resource-group $
 Write-Host "6/7 - A criar o Contentor PlantasFeed..."
 az cosmosdb sql container create --account-name $ACCOUNT_NAME --resource-group $RESOURCE_GROUP --database-name $DATABASE_NAME --name "PlantasFeed" --partition-key-path "/id" --output none
 
-Write-Host "7/7 - A atualizar o ficheiro .env..."
-$CONN_STRING = az cosmosdb keys list --name $ACCOUNT_NAME --resource-group $RESOURCE_GROUP --type connection-strings --query "connectionStrings[0].connectionString" --output tsv
+# 7. Criar Storage Account (necessário para a Function e requisito do projeto)
+$STORAGE_NAME="estufastorage$(Get-Random)"
+Write-Host "7/9 - A criar a Storage Account ($STORAGE_NAME)..."
+az storage account create --name $STORAGE_NAME --location $LOCATION --resource-group $RESOURCE_GROUP --sku Standard_LRS --output none
 
-$envFile = ".env"
-if (-Not (Test-Path $envFile)) {
-    New-Item -Path $envFile -ItemType File | Out-Null
-}
+# 8. Criar a Function App
+$FUNCTION_APP_NAME="estufa-functions-$(Get-Random)"
+Write-Host "8/9 - A criar a Function App ($FUNCTION_APP_NAME)..."
+az functionapp create --name $FUNCTION_APP_NAME --resource-group $RESOURCE_GROUP --storage-account $STORAGE_NAME --consumption-plan-location $LOCATION --runtime node --runtime-version 20 --functions-version 4 --os-type Linux --output none
 
-$envContent = Get-Content $envFile -Raw
-if ($envContent -match "VITE_COSMOS_CONNECTION_STRING") {
-    (Get-Content $envFile) -replace '^VITE_COSMOS_CONNECTION_STRING=.*', "VITE_COSMOS_CONNECTION_STRING=`"$CONN_STRING`"" | Set-Content $envFile
-} else {
-    Add-Content -Path $envFile -Value "VITE_COSMOS_CONNECTION_STRING=`"$CONN_STRING`""
-}
+# 9. Mover a Connection String do Front-end para a Function
+Write-Host "9/9 - A configurar a Connection String..."
+az functionapp config appsettings set --name $FUNCTION_APP_NAME --resource-group $RESOURCE_GROUP --settings "COSMOS_CONNECTION_STRING=$CONN_STRING" --output none
 
-Write-Host "Sucesso! A infraestrutura foi criada e o .env atualizado."
+Write-Host "Sucesso! Recurso Function App criado e configurado."

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-// Importamos o nosso serviço do Cosmos DB!
-import { atualizarUtilizadorNoCosmos, registarUtilizador, verificarLogin } from '../../services/cosmosService';
+
+// URL base da tua API (Azure Functions). 
+const API_BASE_URL = (import.meta as any)?.env?.VITE_API_BASE_URL || "http://localhost:7071/api";
 
 // Types
 export interface User {
@@ -27,11 +28,10 @@ export interface PlantResult {
 interface AzureContextType {
   user: User | null;
   feed: PlantResult[];
-  // Atualizamos as assinaturas para Promise<boolean>
   login: (username: string, password: string) => Promise<boolean>;
   register: (username: string, password: string, additionalData?: Partial<User>) => Promise<boolean>;
   logout: () => void;
-  updateUser: (updatedData: Partial<User>) => void;
+  updateUser: (updatedData: Partial<User>) => Promise<void>;
   uploadImage: (file: File) => Promise<string>;
   detectPlant: (imageUrl: string) => Promise<PlantResult>;
   isLoading: boolean;
@@ -47,7 +47,7 @@ export function AzureProvider({ children }: { children: ReactNode }) {
   const [feed, setFeed] = useState<PlantResult[]>(INITIAL_FEED);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mantemos a persistência da sessão via localStorage para o utilizador não ter de fazer login sempre
+  // Persistência da sessão via localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem('estufa_user');
     if (storedUser) {
@@ -58,33 +58,44 @@ export function AzureProvider({ children }: { children: ReactNode }) {
   const register = async (username: string, password: string, additionalData?: Partial<User>): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Chama o Cosmos DB para registar
-      const utilizadorCriado = await registarUtilizador({
-        username,
-        password,
-        fullName: additionalData?.fullName || "",
-        email: additionalData?.email || "",
-        bio: additionalData?.bio || "",
+      // Pedido HTTP para a Azure Function de Registo
+      const response = await fetch(`${API_BASE_URL}/RegisterUser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: username.toLowerCase().trim(),
+          userId: username.toLowerCase().trim(),
+          username,
+          password,
+          fullName: additionalData?.fullName || "",
+          email: additionalData?.email || "",
+          bio: additionalData?.bio || "",
+          avatarUrl: "",
+          dataRegisto: new Date().toISOString()
+        })
       });
 
-      if (utilizadorCriado) {
-        // Mapeia a resposta do CosmosDB para a interface User do Contexto
+      if (response.ok) {
+        const data = await response.json();
+        // A Function deve devolver o utilizador criado na propriedade 'user'
         const newUser: User = {
-          id: utilizadorCriado.id,
-          username: utilizadorCriado.username,
-          fullName: utilizadorCriado.fullName,
-          email: utilizadorCriado.email,
-          bio: utilizadorCriado.bio,
-          avatarUrl: utilizadorCriado.avatarUrl,
+          id: data.user.id,
+          username: data.user.username,
+          fullName: data.user.fullName,
+          email: data.user.email,
+          bio: data.user.bio,
+          avatarUrl: data.user.avatarUrl,
         };
 
         setUser(newUser);
         localStorage.setItem('estufa_user', JSON.stringify(newUser));
         return true;
+      } else {
+        console.error("Erro retornado pela API no registo:", await response.text());
+        return false;
       }
-      return false;
     } catch (error) {
-      console.error("Falha no registo:", error);
+      console.error("Falha ao contactar a API de registo:", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -94,26 +105,33 @@ export function AzureProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Chama o Cosmos DB para verificar as credenciais
-      const resultado = await verificarLogin(username, password);
+      // Pedido HTTP para a Azure Function de Login
+      const response = await fetch(`${API_BASE_URL}/LoginUser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
 
-      if (resultado.sucesso && resultado.utilizador) {
+      if (response.ok) {
+        const data = await response.json();
         const loggedUser: User = {
-          id: resultado.utilizador.id,
-          username: resultado.utilizador.username,
-          fullName: resultado.utilizador.fullName,
-          email: resultado.utilizador.email,
-          bio: resultado.utilizador.bio,
-          avatarUrl: resultado.utilizador.avatarUrl,
+          id: data.user.id,
+          username: data.user.username,
+          fullName: data.user.fullName,
+          email: data.user.email,
+          bio: data.user.bio,
+          avatarUrl: data.user.avatarUrl,
         };
 
         setUser(loggedUser);
         localStorage.setItem('estufa_user', JSON.stringify(loggedUser));
         return true;
+      } else {
+        console.error("Credenciais inválidas ou erro na API");
+        return false;
       }
-      return false;
     } catch (error) {
-      console.error("Falha no login:", error);
+      console.error("Falha ao contactar a API de login:", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -125,27 +143,35 @@ export function AzureProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('estufa_user');
   };
 
-  // No AzureContext.tsx
-const updateUser = async (updatedData: Partial<User>) => {
-  if (!user) return;
-  
-  setIsLoading(true);
-  try {
-    // 1. Atualiza na Nuvem (Azure Cosmos DB)
-    await atualizarUtilizadorNoCosmos(user.id, updatedData);
+  const updateUser = async (updatedData: Partial<User>): Promise<void> => {
+    if (!user) return;
     
-    // 2. Se a cloud responder com sucesso, atualizamos o estado local
-    const updatedUser = { ...user, ...updatedData };
-    setUser(updatedUser);
-    
-    // 3. Atualizamos o cache local
-    localStorage.setItem('estufa_user', JSON.stringify(updatedUser));
-  } catch (error) {
-    alert("Não foi possível sincronizar os dados com a base de dados.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+    setIsLoading(true);
+    try {
+      // Pedido HTTP para a Azure Function de Atualização
+      const response = await fetch(`${API_BASE_URL}/UpdateUser`, {
+        method: 'POST', // ou PUT, dependendo de como criares a Function
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: user.id, 
+          updatedData 
+        })
+      });
+
+      if (response.ok) {
+        const updatedUser = { ...user, ...updatedData };
+        setUser(updatedUser);
+        localStorage.setItem('estufa_user', JSON.stringify(updatedUser));
+      } else {
+        alert("Não foi possível sincronizar os dados com a base de dados.");
+      }
+    } catch (error) {
+      console.error("Falha ao contactar a API de atualização:", error);
+      alert("Erro de ligação à API.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Os vossos mocks de uploadImage e detectPlant mantêm-se iguais para já...
   const uploadImage = async (file: File): Promise<string> => { /* ... */ return ""; };
